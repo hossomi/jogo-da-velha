@@ -35,7 +35,8 @@ app.post('/', (req, res) => {
                 row: i, 
                 col: j, 
                 value
-            })))
+            }))),
+            message: `You clicked ${req.fields.row},${req.fields.col}`
     }
     res.send(template(context))
 })
