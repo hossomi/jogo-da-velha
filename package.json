@@ -5,6 +5,9 @@
   "main": "index.js",
   "author": "Marcelo Hossomi",
   "license": "ISC",
+  "scripts": {
+    "start": "node index.js"
+  },
   "dependencies": {
     "express": "^4.17.1",
     "handlebars": "^4.5.1"
