@@ -4,9 +4,18 @@ const formidable = require('express-formidable')
 const handlebars = require('handlebars')
 const template = handlebars.compile(fs.readFileSync('index.html').toString())
 
+const BOARD_SIZE = 3
 const PLAYER_NONE = ' '
 const PLAYER_X = 'X'
 const PLAYER_O = 'O'
+
+function not(x) {
+    return v => v !== x
+}
+
+function is(x) {
+    return v => v === x
+}
 
 const state = {
     board: [
@@ -48,14 +57,43 @@ function filter(value, condition) {
 }
 
 function getWinner(board) {
+
     // Check rows
-    for (let r = 0; r < board.length; r++) {
-        let p = filter(board[r][0], v => v !== PLAYER_NONE)
-        for (let c = 1; c < board[r].length && p; c++) {
-            p = filter(p, v => v === board[r][c])
+    for (let r = 0; r < BOARD_SIZE; r++) {
+        let p = filter(board[r][0], not(PLAYER_NONE))
+        for (let c = 1; c < BOARD_SIZE && p; c++) {
+            p = filter(p, is(board[r][c]))
         }
         if (p) return p
     }
+
+    // Check columns
+    for (let c = 0; c < BOARD_SIZE; c++) {
+        let p = filter(board[0][c], not(PLAYER_NONE))
+        for (let r = 1; r < BOARD_SIZE && p; r++) {
+            p = filter(p, is(board[r][c]))
+        }
+        if (p) return p
+    }
+
+    // Check diagonal
+    {
+        let p = filter(board[0][0], not(PLAYER_NONE))
+        for (let i = 1; i < BOARD_SIZE && p; i++) {
+            p = filter(p, is(board[i][i]))
+        }
+        if (p) return p
+    }
+
+    // Check other diagonal
+    {
+        let p = filter(board[0][BOARD_SIZE - 1], not(PLAYER_NONE))
+        for (let i = 1; i < BOARD_SIZE && p; i++) {
+            p = filter(p, is(board[i][BOARD_SIZE - 1 - i]))
+        }
+        if (p) return p
+    }
+
     return undefined;
 }
 
