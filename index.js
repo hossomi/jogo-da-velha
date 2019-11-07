@@ -9,6 +9,10 @@ const PLAYER_NONE = ' '
 const PLAYER_X = 'X'
 const PLAYER_O = 'O'
 
+function filter(value, condition) {
+    if (condition(value)) return value
+}
+
 function not(x) {
     return v => v !== x
 }
@@ -40,20 +44,22 @@ function stateToContext(message) {
     }
 }
 
-function putPlayer(player, row, col, board) {
-    if (board[row][col] !== PLAYER_NONE)
-        return false
-
-    board[row][col] = player
-    return true
+function isMoveValid(row, col) {
+    return state.board[row][col] === PLAYER_NONE
 }
 
-function nextPlayer(player) {
-    return player === PLAYER_X ? PLAYER_O : PLAYER_X
-}
+function processMove(row, col) {
+    state.board[row][col] = state.currentPlayer
+    state.winner = getWinner(state.board)
 
-function filter(value, condition) {
-    if (condition(value)) return value
+    if (state.winner) {
+        return template(stateToContext())
+    }
+    else {
+        const message = `Player ${state.currentPlayer} played ${row},${col}`
+        state.currentPlayer = state.currentPlayer === PLAYER_X ? PLAYER_O : PLAYER_X
+        return template(stateToContext(message))
+    }
 }
 
 function getWinner(board) {
@@ -108,17 +114,12 @@ app.post('/', (req, res) => {
     const row = req.fields.row
     const col = req.fields.col
 
-    if (putPlayer(state.currentPlayer, row, col, state.board)) {
-        state.winner = getWinner(state.board)
-        if (state.winner) {
-            res.send(template(stateToContext()))
-        }
-        else {
-            const previousPlayer = state.currentPlayer
-            state.currentPlayer = nextPlayer(state.currentPlayer)
-            res.send(template(stateToContext(
-                `Player ${previousPlayer} played ${row},${col}`)))
-        }
+    if (state.winner) {
+        res.send(template(stateToContext(
+            'Game has finished!')))
+    }
+    else if (isMoveValid(row, col)) {
+        res.send(processMove(row, col))
     }
     else {
         res.send(template(stateToContext(
