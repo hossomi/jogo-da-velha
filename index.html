@@ -1,16 +1,19 @@
+<form method="POST">
+    <input type="submit" name="reset" value="Reset" />
+</form>
 {{#each board}}
-    {{#each this}}
-        <form method="POST" style="display:inline">
-            <input type="submit" value="{{this.value}}" style="width:50px; height:50px; margin:0" />
-            <input type="hidden" name="row" value="{{this.row}}" />
-            <input type="hidden" name="col" value="{{this.col}}" />
-        </form>
-    {{/each}}
-    <br />
+{{#each this}}
+<form method="POST" style="display:inline">
+    <input type="submit" value="{{this.value}}" style="width:50px; height:50px; margin:0" />
+    <input type="hidden" name="row" value="{{this.row}}" />
+    <input type="hidden" name="col" value="{{this.col}}" />
+</form>
+{{/each}}
+<br />
 {{/each}}
 {{#if finished}}
-    <p>Player {{player}} won!</p>
+<p>Player {{player}} won!</p>
 {{else}}
-    <p>Player {{player}} turn!</p>
+<p>Player {{player}} turn!</p>
 {{/if}}
 <p>{{message}}</p>

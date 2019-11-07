@@ -30,7 +30,7 @@ const state = {
     currentPlayer: PLAYER_X
 }
 
-function stateToContext(message) {
+function getRenderContext(message) {
     return {
         board: state.board.map((row, i) => row
             .map((value, j) => ({
@@ -53,12 +53,12 @@ function processMove(row, col) {
     state.winner = getWinner(state.board)
 
     if (state.winner) {
-        return template(stateToContext())
+        return template(getRenderContext())
     }
     else {
         const message = `Player ${state.currentPlayer} played ${row},${col}`
         state.currentPlayer = state.currentPlayer === PLAYER_X ? PLAYER_O : PLAYER_X
-        return template(stateToContext(message))
+        return template(getRenderContext(message))
     }
 }
 
@@ -103,26 +103,45 @@ function getWinner(board) {
     return undefined;
 }
 
+function reset() {
+    state.board = [
+        [PLAYER_NONE, PLAYER_NONE, PLAYER_NONE],
+        [PLAYER_NONE, PLAYER_NONE, PLAYER_NONE],
+        [PLAYER_NONE, PLAYER_NONE, PLAYER_NONE]
+    ]
+    state.currentPlayer = PLAYER_X
+    delete state.winner
+
+    return template(getRenderContext(
+        'Game reset!'))
+}
+
 const app = express()
 app.use(formidable())
 
 app.get('/', (req, res) => {
-    res.send(template(stateToContext()))
+    res.send(template(getRenderContext()))
 })
 
 app.post('/', (req, res) => {
+
+    if (req.fields.reset) {
+        res.send(reset())
+        return
+    }
+
     const row = req.fields.row
     const col = req.fields.col
 
     if (state.winner) {
-        res.send(template(stateToContext(
+        res.send(template(getRenderContext(
             'Game has finished!')))
     }
     else if (isMoveValid(row, col)) {
         res.send(processMove(row, col))
     }
     else {
-        res.send(template(stateToContext(
+        res.send(template(getRenderContext(
             'You cannot play there')))
     }
 })
