@@ -52,13 +52,10 @@ function processMove(row, col) {
     state.board[row][col] = state.currentPlayer
     state.winner = getWinner(state.board)
 
-    if (state.winner) {
-        return template(getRenderContext())
-    }
-    else {
+    if (!state.winner) {
         const message = `Player ${state.currentPlayer} played ${row},${col}`
         state.currentPlayer = state.currentPlayer === PLAYER_X ? PLAYER_O : PLAYER_X
-        return template(getRenderContext(message))
+        return message
     }
 }
 
@@ -111,9 +108,6 @@ function reset() {
     ]
     state.currentPlayer = PLAYER_X
     delete state.winner
-
-    return template(getRenderContext(
-        'Game reset!'))
 }
 
 const app = express()
@@ -124,25 +118,23 @@ app.get('/', (req, res) => {
 })
 
 app.post('/', (req, res) => {
-
     if (req.fields.reset) {
-        res.send(reset())
-        return
-    }
-
-    const row = req.fields.row
-    const col = req.fields.col
-
-    if (state.winner) {
-        res.send(template(getRenderContext(
-            'Game has finished!')))
-    }
-    else if (isMoveValid(row, col)) {
-        res.send(processMove(row, col))
+        reset()
+        res.send(template(getRenderContext('Game reset!')))
     }
     else {
-        res.send(template(getRenderContext(
-            'You cannot play there')))
+        const row = req.fields.row
+        const col = req.fields.col
+
+        if (state.winner) {
+            res.send(template(getRenderContext('Game has finished!')))
+        }
+        else if (isMoveValid(row, col)) {
+            res.send(template(getRenderContext(processMove(row, col))))
+        }
+        else {
+            res.send(template(getRenderContext('You cannot play there')))
+        }
     }
 })
 
